@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/soheltarir/gollections/bst"
+	"github.com/soheltarir/gollections/trees/bst"
 )
 
 func main() {
@@ -13,6 +13,6 @@ func main() {
 	btree.Insert(11)
 	btree.Insert(9)
 	btree.Insert(4)
-	fmt.Println(btree.BreadthTraverse())
+	fmt.Println(btree.Height())
+	fmt.Println(btree.BreadthFirstSearch())
 }
-
