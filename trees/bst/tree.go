@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/soheltarir/gollections/core"
 	"github.com/soheltarir/gollections/queue"
+	"github.com/soheltarir/gollections/trees/binary_trees"
 )
 
 type Tree struct {
-	root   *Node
-	height int
+	binary_trees.Tree
 	// internal attributes for type assertions
 	expectedType string
 	checker      core.TypeChecker
@@ -23,21 +23,8 @@ func (t *Tree) Insert(value interface{}) {
 	if t.checker != nil && !t.checker(value) {
 		panic(fmt.Sprintf("invalid type provided, expected %s", t.expectedType))
 	}
-	newNode := &Node{Value: value}
-	t.root, t.height = insertToTree(t.root, newNode, t.comparator, 0)
-}
-
-func (t *Tree) InsertMany(values ...interface{}) {
-	for _, value := range values {
-		t.Insert(value)
-	}
-}
-
-// Height returns the height of the tree
-// - Time Complexity: O(1)
-// - Space Complexity: O(1)
-func (t *Tree) Height() int {
-	return t.height
+	newNode := &binary_trees.Node{Value: value}
+	t.Root, t.Height = insertToTree(t.Root, newNode, t.comparator, 0)
 }
 
 // BreadthFirstSearch traverses the tree across breadth. For more refer: https://en.wikipedia.org/wiki/Breadth-first_search
@@ -50,11 +37,11 @@ func (t *Tree) BreadthFirstSearch() []interface{} {
 	// queue to store visited nodes
 	q := queue.New()
 
-	currentNode := t.root
+	currentNode := t.Root
 	q.Enqueue(currentNode)
 
 	for !q.Empty() {
-		currentNode = q.Dequeue().(*Node)
+		currentNode = q.Dequeue().(*binary_trees.Node)
 		nodes = append(nodes, currentNode.Value)
 		if currentNode.Left != nil {
 			q.Enqueue(currentNode.Left)
@@ -68,18 +55,26 @@ func (t *Tree) BreadthFirstSearch() []interface{} {
 
 // NewInt returns a binary search tree with nodes containing int data
 func NewInt() *Tree {
-	return &Tree{
+	tree := &Tree{
 		comparator:   core.IntCompare,
 		checker:      core.IntChecker,
 		expectedType: "int",
 	}
+	// The below handling is required to achieve method overriding.
+	// Refer: https://stackoverflow.com/questions/38123911/golang-method-override
+	tree.TreeOperations = interface{}(tree).(binary_trees.TreeOperations)
+	return tree
 }
 
 // NewString returns a binary search tree with nodes containing string data
 func NewString() *Tree {
-	return &Tree{
+	tree := &Tree{
 		expectedType: "string",
 		checker:      core.StringChecker,
 		comparator:   core.StringCompare,
 	}
+	// The below handling is required to achieve method overriding.
+	// Refer: https://stackoverflow.com/questions/38123911/golang-method-override
+	tree.TreeOperations = interface{}(tree).(binary_trees.TreeOperations)
+	return tree
 }

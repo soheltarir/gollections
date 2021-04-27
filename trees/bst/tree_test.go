@@ -28,13 +28,13 @@ func TestTree_Insert(t *testing.T) {
 	tree.Insert(10)
 	tree.Insert(1)
 	tree.Insert(11)
-	assert.Equal(t, 2, tree.Height())
+	assert.Equal(t, 2, tree.Height)
 }
 
 func TestTree_InsertMany(t *testing.T) {
 	tree := NewInt()
 	tree.InsertMany(10, 1, 11)
-	assert.Equal(t, 2, tree.Height())
+	assert.Equal(t, 2, tree.Height)
 }
 
 func TestTree_BreadthFirstSearch(t *testing.T) {

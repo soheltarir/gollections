@@ -1,10 +1,18 @@
 package bst
 
-import "github.com/soheltarir/gollections/core"
+import (
+	"github.com/soheltarir/gollections/core"
+	"github.com/soheltarir/gollections/trees/binary_trees"
+)
 
 // insertToTree inserts a new node at the leaf and returns the updated height of the tree.
 // This is a recursive helper function
-func insertToTree(root *Node, newNode *Node, comparator core.Comparator, currHeight int) (*Node, int) {
+func insertToTree(
+	root *binary_trees.Node,
+	newNode *binary_trees.Node,
+	comparator core.Comparator,
+	currHeight int,
+) (*binary_trees.Node, int) {
 	// Handle base case for recursion
 	if root == nil {
 		if currHeight == 0 {
