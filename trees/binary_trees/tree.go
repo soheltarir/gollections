@@ -1,6 +1,9 @@
 package binary_trees
 
-import "github.com/soheltarir/gollections/queue"
+import (
+	"github.com/soheltarir/gollections/containers"
+	"github.com/soheltarir/gollections/queue"
+)
 
 // TreeOperations creates a signature of common binary tree operations
 type TreeOperations interface {
@@ -11,13 +14,15 @@ type TreeOperations interface {
 // Tree defines the structure of a binary tree
 type Tree struct {
 	TreeOperations
-	Root   *Node
-	Height int
+	Root     *Node
+	Height   int
+	datatype containers.Container
 }
 
 // Insert adds a node in the tree
 func (t *Tree) Insert(value interface{}) {
-	newNode := &Node{Value: value}
+
+	newNode := &Node{Value: t.datatype.Validate(value)}
 	if t.Root == nil {
 		t.Root = newNode
 		t.Height++
@@ -56,9 +61,13 @@ func (t *Tree) InsertMany(values ...interface{}) {
 	}
 }
 
+func NewInt() *Tree {
+	return New(containers.IntContainer(0))
+}
+
 // New instantiates a fresh binary tree
-func New() *Tree {
-	tree := &Tree{Root: nil, Height: 0}
+func New(datatype containers.Container) *Tree {
+	tree := &Tree{Root: nil, Height: 0, datatype: datatype}
 	// The below handling is required to achieve method overriding.
 	// Refer: https://stackoverflow.com/questions/38123911/golang-method-override
 	tree.TreeOperations = interface{}(tree).(TreeOperations)

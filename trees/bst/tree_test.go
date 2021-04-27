@@ -40,11 +40,6 @@ func TestTree_InsertMany(t *testing.T) {
 func TestTree_BreadthFirstSearch(t *testing.T) {
 	tree := NewInt()
 	tree.InsertMany(10, 1, 11, 3, 4, 12)
-	// Need to convert the result to int slice first
-	res := tree.BreadthFirstSearch()
-	var actual []int
-	for _, val := range res {
-		actual = append(actual, val.(int))
-	}
-	assert.Equal(t, []int{10, 1, 11, 3, 12, 4}, actual)
+	actual := tree.BreadthFirstSearch()
+	assert.Equal(t, []interface{}{10, 1, 11, 3, 12, 4}, actual)
 }

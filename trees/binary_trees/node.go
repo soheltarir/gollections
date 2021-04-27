@@ -1,7 +1,9 @@
 package binary_trees
 
+import "github.com/soheltarir/gollections/containers"
+
 type Node struct {
-	Value interface{}
+	Value containers.Container
 	Left  *Node
 	Right *Node
 }

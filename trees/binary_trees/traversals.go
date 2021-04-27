@@ -9,7 +9,7 @@ func inorderTraversalAuxiliary(node *Node, result []interface{}) []interface{} {
 	if node.Left != nil {
 		result = inorderTraversalAuxiliary(node.Left, result)
 	}
-	result = append(result, node.Value)
+	result = append(result, node.Value.Key())
 	if node.Right != nil {
 		result = inorderTraversalAuxiliary(node.Right, result)
 	}
@@ -18,7 +18,7 @@ func inorderTraversalAuxiliary(node *Node, result []interface{}) []interface{} {
 
 // preorderTraversalAuxiliary is a recursive function to traverse the tree PreOrder depth first
 func preorderTraversalAuxiliary(node *Node, result []interface{}) []interface{} {
-	result = append(result, node.Value)
+	result = append(result, node.Value.Key())
 	if node.Left != nil {
 		result = preorderTraversalAuxiliary(node.Left, result)
 	}
@@ -36,7 +36,7 @@ func postorderTraversalAuxiliary(node *Node, result []interface{}) []interface{}
 	if node.Right != nil {
 		result = postorderTraversalAuxiliary(node.Right, result)
 	}
-	result = append(result, node.Value)
+	result = append(result, node.Value.Key())
 	return result
 }
 

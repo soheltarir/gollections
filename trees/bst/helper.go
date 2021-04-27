@@ -1,7 +1,6 @@
 package bst
 
 import (
-	"github.com/soheltarir/gollections/core"
 	"github.com/soheltarir/gollections/trees/binary_trees"
 )
 
@@ -10,7 +9,6 @@ import (
 func insertToTree(
 	root *binary_trees.Node,
 	newNode *binary_trees.Node,
-	comparator core.Comparator,
 	currHeight int,
 ) (*binary_trees.Node, int) {
 	// Handle base case for recursion
@@ -20,12 +18,11 @@ func insertToTree(
 		}
 		return newNode, currHeight
 	}
-	switch comparator(root.Value, newNode.Value) {
-	case core.Greater:
-		root.Left, currHeight = insertToTree(root.Left, newNode, comparator, currHeight)
+	if root.Value.Less(newNode.Value) {
+		root.Right, currHeight = insertToTree(root.Right, newNode, currHeight)
 		currHeight++
-	case core.Lesser:
-		root.Right, currHeight = insertToTree(root.Right, newNode, comparator, currHeight)
+	} else {
+		root.Left, currHeight = insertToTree(root.Left, newNode, currHeight)
 		currHeight++
 	}
 	return root, currHeight
