@@ -41,9 +41,7 @@ func (t *Tree) Insert(value interface{}) {
 		}
 		if currNode.Right == nil {
 			currNode.Right = newNode
-			if currHeight >= t.Height {
-				t.Height++
-			}
+			// We don't need to increment height here, as we are filling up the left leaf first.
 			break
 		} else {
 			q.Enqueue(currNode.Right)
