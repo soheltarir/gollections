@@ -11,12 +11,10 @@ func ExampleToInt() {
 	fmt.Printf("Value: %d Type: %T", containers.ToInt(a), containers.ToInt(a))
 
 	// The below code will panic
-	containers.ToInt("a")
+	//containers.ToInt("a")
 
 	// Output:
 	// Value: 1 Type: int
-	// panic: invalid type provided; expected: containers.IntContainer, received: string [recovered]
-	//        panic: invalid type provided; expected: containers.IntContainer, received: string
 }
 
 func ExampleToString() {
@@ -25,10 +23,8 @@ func ExampleToString() {
 	fmt.Printf("Value: %s Type: %T", containers.ToString(a), containers.ToString(a))
 
 	// The below code will panic
-	containers.ToString(1)
+	//containers.ToString(1)
 
 	// Output:
 	// Value: a Type: string
-	// panic: invalid type provided; expected: containers.StringContainer, received: int [recovered]
-	//        panic: invalid type provided; expected: containers.StringContainer, received: int
 }

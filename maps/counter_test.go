@@ -43,3 +43,12 @@ func TestCounter_MostCommon(t *testing.T) {
 	expected = map[containers.Container]int{containers.StringContainer("a"): 2, containers.StringContainer("b"): 2}
 	assert.Equal(t, expected, counter.MostCommon(2))
 }
+
+func TestCounter_Iterator(t *testing.T) {
+	counter := NewStringCounter()
+	arr := []interface{}{"a", "a", "b", "c", "d", "a", "c"}
+	counter.AddMany(arr...)
+	counter.Iterator(func(key interface{}, value int) {
+		assert.Equal(t, counter.counterMap[key], value)
+	})
+}

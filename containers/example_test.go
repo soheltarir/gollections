@@ -47,7 +47,7 @@ func Example() {
 	fmt.Println("Is User 1 Less than User 2? ", user1.Less(user2))
 
 	// Output:
-	// 1
-	// 2
-	// true
+	// User 1 Key:  1
+	// User 2 Key:  2
+	// Is User 1 Less than User 2?  true
 }

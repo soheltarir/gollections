@@ -33,6 +33,13 @@ func (c *Counter) Add(element interface{}) {
 	c.objMap[x.Key()] = x
 }
 
+// AddMany updates the counts for the arguments provided
+func (c *Counter) AddMany(elements ...interface{}) {
+	for _, element := range elements {
+		c.Add(element)
+	}
+}
+
 // Subtract decrements the counter for the element provided. Counts can be reduced below zero.
 func (c *Counter) Subtract(element interface{}) {
 	x := c.datatype.Validate(element)
@@ -49,6 +56,13 @@ func (c *Counter) Subtract(element interface{}) {
 func (c Counter) Get(obj interface{}) int {
 	element := c.datatype.Validate(obj)
 	return c.counterMap[element.Key()]
+}
+
+// Iterator loops through the counters and gives a callback for each key-value pair.
+func (c Counter) Iterator(callback func(key interface{}, value int)) {
+	for k, v := range c.counterMap {
+		callback(k, v)
+	}
 }
 
 // MostCommon lists the n most common elements and their counts from the most common to the least.
