@@ -5,12 +5,20 @@ import (
 	"reflect"
 )
 
+// Container is base interface that most of the data structures use.
+// Any struct/type should implement the methods to be considered as a `Container`.
+// Refer IntContainer for implementation reference
 type Container interface {
+	// Key signifies a unique identifier for the struct/type. This function should return the datatype which
+	// implement equality (=) operator, i.e., the datatype of the Key should be one of Go's basic types (https://tour.golang.org/basics/11)
 	Key() interface{}
+	// Less reports whether the implementing struct/type is less than the target Container or not.
 	Less(container Container) bool
+	// Validate converts an interface type to the corresponding Container. Should panic if an invalid interface is provided.
 	Validate(interface{}) Container
 }
 
+// IntContainer is a Container encapsulation over basic int type
 type IntContainer int
 
 func (c IntContainer) Key() interface{} {
@@ -30,6 +38,7 @@ func (IntContainer) Validate(x interface{}) Container {
 	return IntContainer(converted)
 }
 
+// StringContainer is a Container encapsulation over the basic string type
 type StringContainer string
 
 func (c StringContainer) Key() interface{} {
