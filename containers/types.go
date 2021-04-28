@@ -1,5 +1,10 @@
 package containers
 
+import (
+	"fmt"
+	"reflect"
+)
+
 type Container interface {
 	Key() interface{}
 	Less(container Container) bool
@@ -20,13 +25,9 @@ func (c IntContainer) Less(value Container) bool {
 func (IntContainer) Validate(x interface{}) Container {
 	converted, ok := x.(int)
 	if !ok {
-		panic("Type conversion failed")
+		panic(buildErrorMsg(IntContainer(0), x))
 	}
 	return IntContainer(converted)
-}
-
-func (c IntContainer) ToNative() int {
-	return int(c)
 }
 
 type StringContainer string
@@ -44,7 +45,13 @@ func (c StringContainer) Less(value Container) bool {
 func (StringContainer) Validate(x interface{}) Container {
 	converted, ok := x.(string)
 	if !ok {
-		panic("Type conversion failed")
+		panic(buildErrorMsg(StringContainer(""), x))
 	}
 	return StringContainer(converted)
+}
+
+// buildErrorMsg builds an error string to inform the difference between the expected & actual value/s.
+func buildErrorMsg(expected interface{}, actual interface{}) string {
+	return fmt.Sprintf("invalid type provided; expected: %s, received: %s",
+		reflect.TypeOf(expected), reflect.TypeOf(actual))
 }
