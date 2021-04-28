@@ -38,18 +38,24 @@ func (c *Counter) Subtract(element interface{}) {
 	x := c.datatype.Validate(element)
 	_, found := c.counterMap[x.Key()]
 	if !found {
-		c.counterMap[x] = -1
+		c.counterMap[x.Key()] = -1
 		c.size++
 	} else {
-		c.counterMap[x]--
+		c.counterMap[x.Key()]--
 	}
 }
 
-// MostCommon lists the n most common elements and their counts from the most common to the least
-func (c Counter) MostCommon(n int) []struct {
-	containers.Container
-	int
-} {
+// Get returns the current counter for the object provided
+func (c Counter) Get(obj interface{}) int {
+	element := c.datatype.Validate(obj)
+	return c.counterMap[element.Key()]
+}
+
+// MostCommon lists the n most common elements and their counts from the most common to the least.
+// Returns a slice of struct containing the Container and it's count
+// Time Complexity: O(n)
+// Space Complexity: O(n)
+func (c Counter) MostCommon(n int) map[containers.Container]int {
 	reverseCounterMap := make(map[int][]interface{})
 	counts := make([]interface{}, 0)
 	for key, value := range c.counterMap {
@@ -64,18 +70,10 @@ func (c Counter) MostCommon(n int) []struct {
 	// Create a Heap
 	heap := heaps.NewMaxInt(counts...)
 	nLargest := heap.NLargest(n)
-	var result []struct {
-		containers.Container
-		int
-	}
+	result := make(map[containers.Container]int)
 	for _, count := range nLargest {
 		for _, element := range reverseCounterMap[containers.ToInt(count)] {
-			result = append(result, struct {
-				containers.Container
-				int
-			}{
-				c.objMap[element], containers.ToInt(count),
-			})
+			result[c.objMap[element]] = containers.ToInt(count)
 		}
 	}
 	return result
