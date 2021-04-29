@@ -52,3 +52,10 @@ func TestCounter_Iterator(t *testing.T) {
 		assert.Equal(t, counter.counterMap[key], value)
 	})
 }
+
+func TestCounter_Delete(t *testing.T) {
+	counter := NewStringCounter("a", "a", "b")
+	counter.Delete("a")
+	assert.Equal(t, 0, counter.Get("a"))
+	assert.Equal(t, 1, counter.Size())
+}

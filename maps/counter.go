@@ -18,6 +18,10 @@ type Counter struct {
 	datatype containers.Container
 }
 
+func (c Counter) Size() int {
+	return c.size
+}
+
 // Add increments the counter for the element provided
 func (c *Counter) Add(element interface{}) {
 	x := c.datatype.Validate(element)
@@ -52,10 +56,25 @@ func (c *Counter) Subtract(element interface{}) {
 	}
 }
 
-// Get returns the current counter for the object provided
+// Delete removes an item from the counter map completely. If counter is nil or there is no such element, delete
+// is a no-op.
+func (c *Counter) Delete(element interface{}) {
+	x := c.datatype.Validate(element)
+	delete(c.counterMap, x.Key())
+	delete(c.objMap, x.Key())
+	if c.size > 0 {
+		c.size--
+	}
+}
+
+// Get returns the current counter for the object provided. Returns zero if the key is not found in the counter
 func (c Counter) Get(obj interface{}) int {
 	element := c.datatype.Validate(obj)
-	return c.counterMap[element.Key()]
+	count, found := c.counterMap[element.Key()]
+	if !found {
+		return 0
+	}
+	return count
 }
 
 // Iterator loops through the counters and gives a callback for each key-value pair.
@@ -94,21 +113,25 @@ func (c Counter) MostCommon(n int) map[containers.Container]int {
 }
 
 // NewCounter instantiates a new counter object with the datatype provided
-func NewCounter(datatype containers.Container) *Counter {
-	return &Counter{
+func NewCounter(datatype containers.Container, elements ...interface{}) *Counter {
+	counter := &Counter{
 		datatype:   datatype,
 		counterMap: make(map[interface{}]int),
 		objMap:     make(map[interface{}]containers.Container),
 		size:       0,
 	}
+	if len(elements) > 0 {
+		counter.AddMany(elements...)
+	}
+	return counter
 }
 
 // NewIntCounter instantiates a counter object with keys as integer variables
-func NewIntCounter() *Counter {
-	return NewCounter(containers.IntContainer(0))
+func NewIntCounter(elements ...interface{}) *Counter {
+	return NewCounter(containers.IntContainer(0), elements...)
 }
 
 // NewStringCounter instantiates a counter object with keys as string variables
-func NewStringCounter() *Counter {
-	return NewCounter(containers.StringContainer(""))
+func NewStringCounter(elements ...interface{}) *Counter {
+	return NewCounter(containers.StringContainer(""), elements...)
 }

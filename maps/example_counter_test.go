@@ -1,6 +1,7 @@
 package maps_test
 
 import (
+	"fmt"
 	"github.com/soheltarir/gollections/containers"
 	"github.com/soheltarir/gollections/maps"
 )
@@ -34,14 +35,29 @@ func Example_counter() {
 	user3 := User{ID: "3", Name: "Natasha Romanoff"}
 
 	// Initialise the Counter. Pass an empty struct to set the datatype of the counter
-	counter := maps.NewCounter(User{})
-	// Each add increments the counter for the object
+	// You can send elements in the NewCounter function itself.
+	counter := maps.NewCounter(User{}, user1, user2, user3)
+	// Increment the counter for the object
 	counter.Add(user1)
-	counter.Add(user1)
-	counter.Add(user3)
+	// Increment counters for multiple objects
+	counter.AddMany(user2, user3)
 	// Each subtract decreases the counter for the object. The count can be less than zero.
 	counter.Subtract(user2)
 
-	// Fetch the count of the objects
+	// Print the count of the elements
+	fmt.Println(counter.Get(user1))
+	fmt.Println(counter.Get(user2))
 
+	// Completely removes the key from the counter
+	counter.Delete(user2)
+	fmt.Println(counter.Get(user2))
+
+	// Prints the size of the Counter object
+	fmt.Println(counter.Size())
+
+	// Output:
+	// 2
+	// 1
+	// 0
+	// 2
 }
