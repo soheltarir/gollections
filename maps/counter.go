@@ -3,6 +3,7 @@ package maps
 import (
 	"github.com/soheltarir/gollections/containers"
 	"github.com/soheltarir/gollections/trees/heaps"
+	"sync"
 )
 
 // Counter is map for counting hashable items. Sometimes called a bag or multiset.
@@ -11,30 +12,52 @@ type Counter struct {
 	// Map to store counters.
 	// The key is an interface{} which corresponds to Key() method implemented by containers.Container interfaces
 	// The value is the counter
-	counterMap map[interface{}]int
+	countMap sync.Map
 	// Map to store containers.Container objects w.r.t. to the Key() for faster lookups
-	objMap   map[interface{}]containers.Container
-	size     int
-	datatype containers.Container
+	objectMap sync.Map
+	size      int
+	datatype  containers.Container
 }
 
-func (c Counter) Size() int {
+func (c *Counter) Size() int {
 	return c.size
+}
+
+func (c *Counter) _getFromCountMap(key interface{}) (int, bool) {
+	value, found := c.countMap.Load(key)
+	if !found {
+		return 0, found
+	}
+	return value.(int), found
+}
+
+func (c *Counter) _storeInCountMap(key interface{}, value int) {
+	c.countMap.Store(key, value)
+}
+
+func (c *Counter) _storeInObjectMap(key interface{}, value containers.Container) {
+	c.objectMap.Store(key, value)
+}
+
+func (c *Counter) _getFromObjectMap(key interface{}) (containers.Container, bool) {
+	value, found := c.objectMap.Load(key)
+	return value.(containers.Container), found
 }
 
 // Add increments the counter for the element provided
 func (c *Counter) Add(element interface{}) {
 	x := c.datatype.Validate(element)
-	_, found := c.counterMap[x.Key()]
+	currCounter, found := c._getFromCountMap(x.Key())
 	// Update the count
 	if !found {
-		c.counterMap[x.Key()] = 1
+		c._storeInCountMap(x.Key(), 1)
 		c.size++
 	} else {
-		c.counterMap[x.Key()]++
+		currCounter++
+		c._storeInCountMap(x.Key(), currCounter)
 	}
 	// Add the containers.Container to object map
-	c.objMap[x.Key()] = x
+	c._storeInObjectMap(x.Key(), x)
 }
 
 // AddMany updates the counts for the arguments provided
@@ -47,12 +70,13 @@ func (c *Counter) AddMany(elements ...interface{}) {
 // Subtract decrements the counter for the element provided. Counts can be reduced below zero.
 func (c *Counter) Subtract(element interface{}) {
 	x := c.datatype.Validate(element)
-	_, found := c.counterMap[x.Key()]
+	currCount, found := c._getFromCountMap(x.Key())
 	if !found {
-		c.counterMap[x.Key()] = -1
+		c._storeInCountMap(x.Key(), -1)
 		c.size++
 	} else {
-		c.counterMap[x.Key()]--
+		currCount--
+		c._storeInCountMap(x.Key(), currCount)
 	}
 }
 
@@ -60,53 +84,58 @@ func (c *Counter) Subtract(element interface{}) {
 // is a no-op.
 func (c *Counter) Delete(element interface{}) {
 	x := c.datatype.Validate(element)
-	delete(c.counterMap, x.Key())
-	delete(c.objMap, x.Key())
+	c.countMap.Delete(x.Key())
+	c.objectMap.Delete(x.Key())
 	if c.size > 0 {
 		c.size--
 	}
 }
 
 // Get returns the current counter for the object provided. Returns zero if the key is not found in the counter
-func (c Counter) Get(obj interface{}) int {
+func (c *Counter) Get(obj interface{}) int {
 	element := c.datatype.Validate(obj)
-	count, found := c.counterMap[element.Key()]
+	count, found := c._getFromCountMap(element.Key())
 	if !found {
 		return 0
 	}
 	return count
 }
 
-// Iterator loops through the counters and gives a callback for each key-value pair.
-func (c Counter) Iterator(callback func(key interface{}, value int)) {
-	for k, v := range c.counterMap {
-		callback(k, v)
-	}
+// Range calls callback sequentially for each key & value (the counter) in the Counter object.
+// This function internally uses sync.Map's Range method, and hence can show inconsistencies during concurrency.
+func (c *Counter) Range(callback func(key interface{}, value int)) {
+	c.countMap.Range(func(k, v interface{}) bool {
+		callback(k, v.(int))
+		return true
+	})
 }
 
 // MostCommon lists the n most common elements and their counts from the most common to the least.
 // Returns a slice of struct containing the Container and it's count
 // Time Complexity: O(n)
 // Space Complexity: O(n)
-func (c Counter) MostCommon(n int) map[containers.Container]int {
+func (c *Counter) MostCommon(n int) map[containers.Container]int {
 	reverseCounterMap := make(map[int][]interface{})
 	counts := make([]interface{}, 0)
-	for key, value := range c.counterMap {
-		_, found := reverseCounterMap[value]
+	c.countMap.Range(func(key, value interface{}) bool {
+		valInt := value.(int)
+		_, found := reverseCounterMap[valInt]
 		if !found {
-			reverseCounterMap[value] = []interface{}{key}
-			counts = append(counts, value)
+			reverseCounterMap[value.(int)] = []interface{}{key}
+			counts = append(counts, valInt)
 		} else {
-			reverseCounterMap[value] = append(reverseCounterMap[value], key)
+			reverseCounterMap[valInt] = append(reverseCounterMap[valInt], key)
 		}
-	}
+		return true
+	})
 	// Create a Heap
 	heap := heaps.NewMaxInt(counts...)
 	nLargest := heap.NLargest(n)
 	result := make(map[containers.Container]int)
 	for _, count := range nLargest {
 		for _, element := range reverseCounterMap[containers.ToInt(count)] {
-			result[c.objMap[element]] = containers.ToInt(count)
+			obj, _ := c._getFromObjectMap(element)
+			result[obj] = containers.ToInt(count)
 		}
 	}
 	return result
@@ -115,10 +144,8 @@ func (c Counter) MostCommon(n int) map[containers.Container]int {
 // NewCounter instantiates a new counter object with the datatype provided
 func NewCounter(datatype containers.Container, elements ...interface{}) *Counter {
 	counter := &Counter{
-		datatype:   datatype,
-		counterMap: make(map[interface{}]int),
-		objMap:     make(map[interface{}]containers.Container),
-		size:       0,
+		datatype: datatype,
+		size:     0,
 	}
 	if len(elements) > 0 {
 		counter.AddMany(elements...)
