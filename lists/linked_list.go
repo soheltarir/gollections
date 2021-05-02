@@ -1,50 +1,63 @@
 package lists
 
+import (
+	"github.com/soheltarir/gollections/containers"
+	"sync/atomic"
+)
+
+// Node represents an element in a Linked List
 type Node struct {
-	Value	interface{}
-	next	*Node
+	Value    containers.Container
+	next     *Node
 	previous *Node
 }
 
+// LinkedList is a sequence container that allow constant time insert and erase operations anywhere within the sequence,
+// and iteration in both directions.
 type LinkedList struct {
-	head	*Node
-	tail	*Node
-	size	int
+	head      atomic.Value //*Node
+	tail      atomic.Value //*Node
+	size      int64
+	valueType containers.Container
 }
 
-// Add inserts a new node (with the value) and the end of the linked list
-func (ll *LinkedList) Add(value interface{}) {
-	newNode := &Node{Value: value}
+/** Modifiers */
+
+// PushFront inserts a new element at the beginning of the list, right before its current first element.
+// This effectively increases the container size by one.
+// Panics if an invalid type is provided.
+func (ll *LinkedList) PushFront(val interface{}) {
+	element := ll.valueType.Validate(val)
+	node := &Node{Value: element}
+
 	if ll.size == 0 {
-		ll.head = newNode
-		ll.tail = newNode
+		ll.head.Store(node)
+		ll.tail.Store(node)
 	} else {
-		ll.tail.next = newNode
-		newNode.previous = ll.tail
-		ll.tail = newNode
+		tmpNode := ll.head.Load().(*Node)
+		node.next = tmpNode
+		ll.head.Store(node)
 	}
-	ll.size++
+	atomic.AddInt64(&ll.size, 1)
 }
 
-// Size returns the length of the linked list
-func (ll *LinkedList) Size() int {
-	return ll.size
-}
+// PushBack adds a new element at the end of the list container, after its current last element.
+// This effectively increases the container size by one.
+// Panics if an invalid type is provided.
+func (ll *LinkedList) PushBack(val interface{}) {
+	element := ll.valueType.Validate(val)
+	node := &Node{Value: element}
 
-// Clear removes all elements of the linked list
-func (ll *LinkedList) Clear() {
-	ll.head, ll.tail = nil, nil
-	ll.size = 0
-}
-
-// Front returns the value of the first element of the linked list
-func (ll *LinkedList) Front() interface{} {
-	return ll.head.Value
-}
-
-// Back returns the value of the last element of the linked list
-func (ll *LinkedList) Back() interface{} {
-	return ll.tail.Value
+	if ll.size == 0 {
+		ll.head.Store(node)
+		ll.tail.Store(node)
+	} else {
+		tail := ll.tail.Load().(*Node)
+		tail.next = node
+		node.previous = tail
+		ll.tail.Store(node)
+	}
+	atomic.AddInt64(&ll.size, 1)
 }
 
 // PopFront deletes the first element of the list and returns it's value
@@ -52,10 +65,12 @@ func (ll *LinkedList) PopFront() interface{} {
 	if ll.size == 0 {
 		return nil
 	}
-	value := ll.head.Value
-	ll.head = ll.head.next
-	ll.size--
-	return value
+	head := ll.head.Load().(*Node)
+	next := head.next
+	next.previous = nil
+	ll.head.Store(next)
+	atomic.AddInt64(&ll.size, -1)
+	return containers.CleanBasicType(head.Value)
 }
 
 // PopBack deletes the last element of the list and returns it's value
@@ -63,14 +78,58 @@ func (ll *LinkedList) PopBack() interface{} {
 	if ll.size == 0 {
 		return nil
 	}
-	value := ll.tail.Value
-	ll.tail = ll.tail.previous
-	ll.tail = nil
-	ll.size--
-	return value
+	tail := ll.tail.Load().(*Node)
+	previous := tail.previous
+	previous.next = nil
+	ll.tail.Store(previous)
+	atomic.AddInt64(&ll.size, -1)
+	return containers.CleanBasicType(tail.Value)
 }
 
-// New instantiates an empty linked list
-func New() *LinkedList {
-	return &LinkedList{}
+// Clear Removes all elements from the list container (which are destroyed), and leaving the list with a size of 0.
+func (ll *LinkedList) Clear() {
+	ll.head.Store(nil)
+	ll.tail.Store(nil)
+	atomic.StoreInt64(&ll.size, 0)
+}
+
+/** Capacity Functions **/
+
+// Size returns the length of the linked list
+func (ll *LinkedList) Size() int64 {
+	return ll.size
+}
+
+// Empty returns whether the list container is empty (i.e. whether its size is 0).
+func (ll *LinkedList) Empty() bool {
+	if ll.size == 0 {
+		return true
+	}
+	return false
+}
+
+/** Element Access **/
+
+// Front returns the value of the first element of the linked list
+func (ll *LinkedList) Front() interface{} {
+	head := ll.head.Load().(*Node)
+	return containers.CleanBasicType(head.Value)
+}
+
+// Back returns the value of the last element of the linked list
+func (ll *LinkedList) Back() interface{} {
+	tail := ll.tail.Load().(*Node)
+	return containers.CleanBasicType(tail.Value)
+}
+
+/** Constructors **/
+
+// New constructs an empty container linked list, with no elements.
+func New(valueType containers.Container) *LinkedList {
+	return &LinkedList{valueType: valueType}
+}
+
+// NewInt constructs an empty integer linked list, with no elements.
+func NewInt() *LinkedList {
+	return New(containers.IntContainer(0))
 }
