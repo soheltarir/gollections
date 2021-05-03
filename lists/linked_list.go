@@ -21,6 +21,32 @@ type LinkedList struct {
 	valueType containers.Container
 }
 
+/** Iterators */
+
+// Begin returns an iterator pointing to the first element in the list container.
+func (ll *LinkedList) Begin() *Iterator {
+	head := ll.head.Load().(*Node)
+	return &Iterator{currentNode: head, direction: forwardDirection, index: 0}
+}
+
+// End Returns an iterator referring to the past-the-end element in the list container.
+func (ll *LinkedList) End() *Iterator {
+	return endFwdIterator
+}
+
+// RBegin returns a reverse iterator pointing to the last element in the container (i.e., its reverse beginning).
+// Reverse iterators iterate backwards: increasing them moves them towards the beginning of the container.
+func (ll *LinkedList) RBegin() *Iterator {
+	tail := ll.tail.Load().(*Node)
+	return &Iterator{currentNode: tail, direction: backwardDirection, index: ll.size}
+}
+
+// REnd returns a reverse iterator pointing to the theoretical element preceding the first element
+// in the list container
+func (ll *LinkedList) REnd() *Iterator {
+	return endBackIterator
+}
+
 /** Modifiers */
 
 // PushFront inserts a new element at the beginning of the list, right before its current first element.
@@ -35,6 +61,7 @@ func (ll *LinkedList) PushFront(val interface{}) {
 		ll.tail.Store(node)
 	} else {
 		tmpNode := ll.head.Load().(*Node)
+		tmpNode.previous = node
 		node.next = tmpNode
 		ll.head.Store(node)
 	}
