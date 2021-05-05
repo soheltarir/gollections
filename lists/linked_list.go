@@ -12,6 +12,11 @@ type Node struct {
 	previous *Node
 }
 
+// nullNode signifies a pointer to a nil valued Node. This workaround is required, due to safe implementation of Clear()
+// operation, because we would want to set the head & tail of linked list to nil, but since atomic.Value doesn't allow
+// setting of nil, we need to set them to this nullNode
+var nullNode = &Node{Value: nil}
+
 // LinkedList is a sequence container that allow constant time insert and erase operations anywhere within the sequence,
 // and iteration in both directions.
 type LinkedList struct {
@@ -21,10 +26,34 @@ type LinkedList struct {
 	valueType containers.Container
 }
 
+/** Element Access **/
+
+// Front returns the value of the first element of the linked list
+func (ll *LinkedList) Front() interface{} {
+	head := ll.head.Load().(*Node)
+	if head == nullNode {
+		return nil
+	}
+	// handle for nilNode
+	return containers.CleanBasicType(head.Value)
+}
+
+// Back returns the value of the last element of the linked list
+func (ll *LinkedList) Back() interface{} {
+	tail := ll.tail.Load().(*Node)
+	if tail == nullNode {
+		return nil
+	}
+	return containers.CleanBasicType(tail.Value)
+}
+
 /** Iterators */
 
 // Begin returns an iterator pointing to the first element in the list container.
 func (ll *LinkedList) Begin() *Iterator {
+	if ll.size == 0 {
+		return ll.End()
+	}
 	head := ll.head.Load().(*Node)
 	return &Iterator{currentNode: head, direction: forwardDirection, index: 0}
 }
@@ -37,8 +66,11 @@ func (ll *LinkedList) End() *Iterator {
 // RBegin returns a reverse iterator pointing to the last element in the container (i.e., its reverse beginning).
 // Reverse iterators iterate backwards: increasing them moves them towards the beginning of the container.
 func (ll *LinkedList) RBegin() *Iterator {
+	if ll.size == 0 {
+		return ll.REnd()
+	}
 	tail := ll.tail.Load().(*Node)
-	return &Iterator{currentNode: tail, direction: backwardDirection, index: ll.size}
+	return &Iterator{currentNode: tail, direction: backwardDirection, index: ll.size - 1}
 }
 
 // REnd returns a reverse iterator pointing to the theoretical element preceding the first element
@@ -115,8 +147,8 @@ func (ll *LinkedList) PopBack() interface{} {
 
 // Clear Removes all elements from the list container (which are destroyed), and leaving the list with a size of 0.
 func (ll *LinkedList) Clear() {
-	ll.head.Store(nil)
-	ll.tail.Store(nil)
+	ll.head.Store(nullNode)
+	ll.tail.Store(nullNode)
 	atomic.StoreInt64(&ll.size, 0)
 }
 
@@ -135,25 +167,14 @@ func (ll *LinkedList) Empty() bool {
 	return false
 }
 
-/** Element Access **/
-
-// Front returns the value of the first element of the linked list
-func (ll *LinkedList) Front() interface{} {
-	head := ll.head.Load().(*Node)
-	return containers.CleanBasicType(head.Value)
-}
-
-// Back returns the value of the last element of the linked list
-func (ll *LinkedList) Back() interface{} {
-	tail := ll.tail.Load().(*Node)
-	return containers.CleanBasicType(tail.Value)
-}
-
 /** Constructors **/
 
 // New constructs an empty container linked list, with no elements.
 func New(valueType containers.Container) *LinkedList {
-	return &LinkedList{valueType: valueType}
+	list := &LinkedList{valueType: valueType}
+	list.head.Store(nullNode)
+	list.tail.Store(nullNode)
+	return list
 }
 
 // NewInt constructs an empty integer linked list, with no elements.
