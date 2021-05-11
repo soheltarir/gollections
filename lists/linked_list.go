@@ -1,8 +1,10 @@
 package lists
 
 import (
+	"fmt"
 	"github.com/soheltarir/gollections/containers"
-	"sync/atomic"
+	"strings"
+	"sync"
 )
 
 // Node represents an element in a Linked List
@@ -12,26 +14,22 @@ type Node struct {
 	previous *Node
 }
 
-// nullNode signifies a pointer to a nil valued Node. This workaround is required, due to safe implementation of Clear()
-// operation, because we would want to set the head & tail of linked list to nil, but since atomic.Value doesn't allow
-// setting of nil, we need to set them to this nullNode
-var nullNode = &Node{Value: nil}
-
 // LinkedList is a sequence container that allow constant time insert and erase operations anywhere within the sequence,
 // and iteration in both directions.
 type LinkedList struct {
-	head      atomic.Value //*Node
-	tail      atomic.Value //*Node
+	head      *Node
+	tail      *Node
 	size      int64
 	valueType containers.Container
+	mu        sync.RWMutex
 }
 
 /** Element Access **/
 
 // Front returns the value of the first element of the linked list
 func (ll *LinkedList) Front() interface{} {
-	head := ll.head.Load().(*Node)
-	if head == nullNode {
+	head := ll.head
+	if head == nil {
 		return nil
 	}
 	// handle for nilNode
@@ -40,8 +38,8 @@ func (ll *LinkedList) Front() interface{} {
 
 // Back returns the value of the last element of the linked list
 func (ll *LinkedList) Back() interface{} {
-	tail := ll.tail.Load().(*Node)
-	if tail == nullNode {
+	tail := ll.tail
+	if tail == nil {
 		return nil
 	}
 	return containers.CleanBasicType(tail.Value)
@@ -51,11 +49,14 @@ func (ll *LinkedList) Back() interface{} {
 
 // Begin returns an iterator pointing to the first element in the list container.
 func (ll *LinkedList) Begin() *Iterator {
+	ll.mu.RLock()
+	defer ll.mu.RUnlock()
+
 	if ll.size == 0 {
 		return ll.End()
 	}
-	head := ll.head.Load().(*Node)
-	return &Iterator{currentNode: head, direction: forwardDirection, index: 0}
+	head := ll.head
+	return &Iterator{currentNode: head, direction: forwardDirection, index: 0, limit: ll.size - 1}
 }
 
 // End Returns an iterator referring to the past-the-end element in the list container.
@@ -69,8 +70,8 @@ func (ll *LinkedList) RBegin() *Iterator {
 	if ll.size == 0 {
 		return ll.REnd()
 	}
-	tail := ll.tail.Load().(*Node)
-	return &Iterator{currentNode: tail, direction: backwardDirection, index: ll.size - 1}
+	tail := ll.tail
+	return &Iterator{currentNode: tail, direction: backwardDirection, index: ll.size - 1, limit: ll.size - 1}
 }
 
 // REnd returns a reverse iterator pointing to the theoretical element preceding the first element
@@ -88,16 +89,19 @@ func (ll *LinkedList) PushFront(val interface{}) {
 	element := ll.valueType.Validate(val)
 	node := &Node{Value: element}
 
+	ll.mu.Lock()
+	defer ll.mu.Unlock()
+
 	if ll.size == 0 {
-		ll.head.Store(node)
-		ll.tail.Store(node)
+		ll.head, ll.tail = node, node
 	} else {
-		tmpNode := ll.head.Load().(*Node)
+		tmpNode := ll.head
 		tmpNode.previous = node
 		node.next = tmpNode
-		ll.head.Store(node)
+		node.previous = nil
+		ll.head = node
 	}
-	atomic.AddInt64(&ll.size, 1)
+	ll.size++
 }
 
 // PushBack adds a new element at the end of the list container, after its current last element.
@@ -107,16 +111,19 @@ func (ll *LinkedList) PushBack(val interface{}) {
 	element := ll.valueType.Validate(val)
 	node := &Node{Value: element}
 
+	ll.mu.Lock()
+	defer ll.mu.Unlock()
+
 	if ll.size == 0 {
-		ll.head.Store(node)
-		ll.tail.Store(node)
+		ll.head, ll.tail = node, node
 	} else {
-		tail := ll.tail.Load().(*Node)
+		tail := ll.tail
 		tail.next = node
 		node.previous = tail
-		ll.tail.Store(node)
+		node.next = nil
+		ll.tail = node
 	}
-	atomic.AddInt64(&ll.size, 1)
+	ll.size++
 }
 
 // PopFront deletes the first element of the list and returns it's value
@@ -124,11 +131,15 @@ func (ll *LinkedList) PopFront() interface{} {
 	if ll.size == 0 {
 		return nil
 	}
-	head := ll.head.Load().(*Node)
+
+	ll.mu.Lock()
+	defer ll.mu.Unlock()
+
+	head := ll.head
 	next := head.next
 	next.previous = nil
-	ll.head.Store(next)
-	atomic.AddInt64(&ll.size, -1)
+	ll.head = next
+	ll.size--
 	return containers.CleanBasicType(head.Value)
 }
 
@@ -137,19 +148,94 @@ func (ll *LinkedList) PopBack() interface{} {
 	if ll.size == 0 {
 		return nil
 	}
-	tail := ll.tail.Load().(*Node)
+
+	ll.mu.Lock()
+	defer ll.mu.Unlock()
+
+	tail := ll.tail
 	previous := tail.previous
 	previous.next = nil
-	ll.tail.Store(previous)
-	atomic.AddInt64(&ll.size, -1)
+	ll.tail = previous
+	ll.size--
 	return containers.CleanBasicType(tail.Value)
+}
+
+// Insert extends the list by inserting new elements before the element at the specified position.
+// This effectively increases the list size by the amount of elements inserted.
+// Note: This operation is not thread safe.
+func (ll *LinkedList) Insert(it *Iterator, elements ...interface{}) {
+	tempList := New(ll.valueType)
+
+	for _, element := range elements {
+		tempList.PushBack(element)
+	}
+	if ll.size == 0 {
+		ll.head, ll.tail = tempList.head, tempList.tail
+		ll.size = tempList.size
+	} else {
+		tmpHead, tmpTail := tempList.head, tempList.tail
+		prev := it.currentNode.previous
+		if prev != nil {
+			prev.next = tmpHead
+			tmpHead.previous = prev
+		} else {
+			// This is the case wherein the elements are being pushed before the head of the list
+			ll.head = tmpHead
+		}
+		it.currentNode.previous = tmpTail
+		tmpTail.next = it.currentNode
+		ll.size += tempList.size
+	}
 }
 
 // Clear Removes all elements from the list container (which are destroyed), and leaving the list with a size of 0.
 func (ll *LinkedList) Clear() {
-	ll.head.Store(nullNode)
-	ll.tail.Store(nullNode)
-	atomic.StoreInt64(&ll.size, 0)
+	ll.mu.Lock()
+	defer ll.mu.Unlock()
+
+	ll.head, ll.tail, ll.size = nil, nil, 0
+}
+
+func (ll *LinkedList) eraseSingle(it *Iterator) {
+	prev := it.currentNode.previous
+	next := it.currentNode.next
+	if prev != nil {
+		prev.next = next
+	}
+	if next != nil {
+		next.previous = prev
+	}
+	// Edge Handling
+	if it.currentNode == ll.head {
+		ll.head = next
+	}
+	if it.currentNode == ll.tail {
+		ll.tail = prev
+	}
+	ll.size--
+}
+
+// Erase removes from the list container either a single element or a range of elements ([first,last)).
+// Note: The bounds are including the first iterator & excluding the last iterator
+func (ll *LinkedList) Erase(iterators ...*Iterator) error {
+	if len(iterators) > 2 || len(iterators) == 0 {
+		return fmt.Errorf("please provide a single iterator or the iterator bounds (i.e., only two iterators)")
+	}
+	ll.mu.Lock()
+	defer ll.mu.Unlock()
+
+	if len(iterators) == 1 {
+		it := iterators[0]
+		ll.eraseSingle(it)
+		return nil
+	}
+
+	first, last := iterators[0], iterators[1]
+
+	for it := first; !it.IsEqual(last); it = it.Next() {
+		ll.eraseSingle(it)
+	}
+	return nil
 }
 
 /** Capacity Functions **/
@@ -167,14 +253,27 @@ func (ll *LinkedList) Empty() bool {
 	return false
 }
 
+/** Display Functions **/
+
+//Display returns a string representation of the linked list.
+func (ll *LinkedList) Display() string {
+	var b strings.Builder
+
+	for it := ll.Begin(); it != ll.End(); it = it.Next() {
+		if it.currentNode != ll.tail {
+			_, _ = fmt.Fprintf(&b, "%v <-> ", it.currentNode.Value.Key())
+		} else {
+			_, _ = fmt.Fprintf(&b, "%v", it.currentNode.Value.Key())
+		}
+	}
+	return b.String()
+}
+
 /** Constructors **/
 
 // New constructs an empty container linked list, with no elements.
 func New(valueType containers.Container) *LinkedList {
-	list := &LinkedList{valueType: valueType}
-	list.head.Store(nullNode)
-	list.tail.Store(nullNode)
-	return list
+	return &LinkedList{valueType: valueType, mu: sync.RWMutex{}}
 }
 
 // NewInt constructs an empty integer linked list, with no elements.

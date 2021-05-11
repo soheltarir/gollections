@@ -1,6 +1,9 @@
 package lists
 
-import "github.com/soheltarir/gollections/containers"
+import (
+	"fmt"
+	"github.com/soheltarir/gollections/containers"
+)
 
 type direction uint
 
@@ -16,29 +19,54 @@ type Iterator struct {
 	currentNode *Node
 	direction   direction
 	index       int64
+	limit       int64
 }
 
-// Next returns the iterator to the next/previous element in the list based on the traversal direction
+// Next returns the iterator to the next/previous element in the list based on the traversal direction. Panics if
+// the iterator reaches out of bounds
 // Please note, iteration over a list is not a thread-safe operation.
 func (it *Iterator) Next() *Iterator {
 	currNode := it.currentNode
+	if currNode == nil {
+		panic("iterator crossed list's bounds")
+	}
+	nextIt := &Iterator{limit: it.limit, direction: it.direction}
 	switch it.direction {
 	case forwardDirection:
-		it.currentNode = currNode.next
-		if it.currentNode == nil {
-			it = endFwdIterator
+		if it.currentNode.next == nil {
+			nextIt = endFwdIterator
 		} else {
-			it.index++
+			nextIt.currentNode, nextIt.index = it.currentNode.next, it.index+1
 		}
 	case backwardDirection:
-		it.currentNode = currNode.previous
-		if it.currentNode == nil {
-			it = endBackIterator
+		if it.currentNode.previous == nil {
+			nextIt = endBackIterator
 		} else {
-			it.index--
+			nextIt.currentNode, nextIt.index = it.currentNode.previous, it.index-1
 		}
 	}
-	return it
+	return nextIt
+}
+
+func (it *Iterator) IsEqual(it2 *Iterator) bool {
+	if it.currentNode == it2.currentNode {
+		return true
+	}
+	return false
+}
+
+// Advance moves the iterator forward by the no. of the steps provided
+func (it *Iterator) Advance(steps int) (*Iterator, error) {
+	if steps <= 0 {
+		return it, fmt.Errorf("step size should be greater than zero")
+	}
+	newItr := it
+	for steps > 0 {
+		newItr = newItr.Next()
+		steps--
+	}
+	*it = *newItr
+	return it, nil
 }
 
 // Value returns the current element's value
