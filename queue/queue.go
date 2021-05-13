@@ -1,3 +1,9 @@
+// Package queue:  FIFO queue.
+//
+// Queues are a type of container adaptor, specifically designed to operate in a FIFO context (first-in first-out),
+// where elements are inserted into one end of the container and extracted from the other.
+//
+// Elements are pushed into the "back" of the specific container and popped from its "front".
 package queue
 
 import (
@@ -41,6 +47,11 @@ func (q *Queue) Size() int64 {
 // Empty returns true if the queue has no items
 func (q *Queue) Empty() bool {
 	return q.data.Empty()
+}
+
+// Clear empties the queue
+func (q *Queue) Clear() {
+	q.data.Clear()
 }
 
 // New instantiates a new queue with the items provided (order is preserved)
