@@ -1,3 +1,8 @@
+// Lists are sequence containers that allow constant time insert and erase operations anywhere within the sequence,
+// and iteration in both directions.
+// List containers are implemented as doubly-linked lists; Doubly linked lists can store each of the elements they
+// contain in different and unrelated storage locations. The ordering is kept internally by the association to each
+// element of a link to the element preceding it and a link to the element following it.
 package lists
 
 import (
