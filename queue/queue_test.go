@@ -3,14 +3,14 @@ package queue
 import "testing"
 
 func TestNew(t *testing.T) {
-	q := New(1, 2, 3)
+	q := NewInt(1, 2, 3)
 	if q.Size() != 3 {
 		t.Errorf("Got %d, expected 3", q.Size())
 	}
 }
 
 func TestQueue_Enqueue(t *testing.T) {
-	q := New()
+	q := NewInt()
 	q.Enqueue(1)
 	if q.Size() != 1 {
 		t.Errorf("Got %d, expected 1", q.Size())
@@ -22,7 +22,7 @@ func TestQueue_Enqueue(t *testing.T) {
 }
 
 func TestQueue_Dequeue(t *testing.T) {
-	q := New()
+	q := NewInt()
 	if q.Dequeue() != nil {
 		t.Errorf("Got a value, expected nil")
 	}
@@ -33,7 +33,7 @@ func TestQueue_Dequeue(t *testing.T) {
 }
 
 func TestQueue_Empty(t *testing.T) {
-	q := New()
+	q := NewInt()
 	if !q.Empty() {
 		t.Errorf("Queue should be empty")
 	}

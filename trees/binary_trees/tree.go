@@ -31,7 +31,8 @@ func (t *Tree) Insert(value interface{}) {
 	// Do a level order traversal until we find an empty place
 	currNode := t.Root
 	currHeight := 0
-	q := queue.New(currNode)
+
+	q := queue.New(new(Node), currNode)
 	for !q.Empty() {
 		currNode = q.Dequeue().(*Node)
 		currHeight++
