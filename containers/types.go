@@ -64,3 +64,16 @@ func buildErrorMsg(expected interface{}, actual interface{}) string {
 	return fmt.Sprintf("invalid type provided; expected: %s, received: %s",
 		reflect.TypeOf(expected), reflect.TypeOf(actual))
 }
+
+// CleanBasicType checks whether the container provided is one of Go's basic types and converts them accordingly
+// to avoid manual conversion from containers (implemented by the package).
+func CleanBasicType(container Container) interface{} {
+	switch container.(type) {
+	case IntContainer:
+		return container.Key()
+	case StringContainer:
+		return container.Key()
+	default:
+		return container
+	}
+}
