@@ -137,7 +137,9 @@ func (ll *LinkedList) PopFront() interface{} {
 
 	head := ll.head
 	next := head.next
-	next.previous = nil
+	if next != nil {
+		next.previous = nil
+	}
 	ll.head = next
 	ll.size--
 	return containers.CleanBasicType(head.Value)
@@ -273,7 +275,7 @@ func (ll *LinkedList) Display() string {
 
 // New constructs an empty container linked list, with no elements.
 func New(valueType containers.Container) *LinkedList {
-	return &LinkedList{valueType: valueType, mu: sync.RWMutex{}}
+	return &LinkedList{valueType: valueType, mu: sync.RWMutex{}, size: 0}
 }
 
 // NewInt constructs an empty integer linked list, with no elements.

@@ -28,19 +28,19 @@ func (t *Tree) BreadthFirstSearch() []interface{} {
 	var nodes []interface{}
 
 	// queue to store visited nodes
-	q := queue.New()
+	q := queue.New(binary_trees.Node{})
 
-	currentNode := t.Root
+	currentNode := *t.Root
 	q.Enqueue(currentNode)
 
 	for !q.Empty() {
-		currentNode = q.Dequeue().(*binary_trees.Node)
+		currentNode = q.Dequeue().(binary_trees.Node)
 		nodes = append(nodes, currentNode.Value.Key())
 		if currentNode.Left != nil {
-			q.Enqueue(currentNode.Left)
+			q.Enqueue(*currentNode.Left)
 		}
 		if currentNode.Right != nil {
-			q.Enqueue(currentNode.Right)
+			q.Enqueue(*currentNode.Right)
 		}
 	}
 	return nodes

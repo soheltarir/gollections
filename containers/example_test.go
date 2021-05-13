@@ -33,7 +33,12 @@ func (u User) Less(x containers.Container) bool {
 func (u User) Validate(x interface{}) containers.Container {
 	converted, ok := x.(User)
 	if !ok {
-		panic("type conversion failed")
+		// Handle for pointer to struct objects
+		converted2, ok2 := x.(*User)
+		if !ok2 {
+			panic("type conversion failed")
+		}
+		return converted2
 	}
 	return converted
 }
