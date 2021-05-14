@@ -24,9 +24,55 @@ SOFTWARE.
 
 package binarytrees
 
+import "github.com/soheltarir/gollections/lists"
+
 /**
 Recursive Auxiliary functions
 */
+
+type traversalType uint
+
+const (
+	breadthFirstTraversal = iota
+)
+
+type Iterator struct {
+	currentNode   *Node
+	visited       *lists.LinkedList
+	traversalType traversalType
+}
+
+var endIterator = &Iterator{}
+
+func (it *Iterator) Next() *Iterator {
+	if it.currentNode == nil {
+		return endIterator
+	}
+	if it.currentNode.Left != nil {
+		it.visited.PushBack(it.currentNode.Left)
+	}
+	if it.currentNode.Right != nil {
+		it.visited.PushBack(it.currentNode.Right)
+	}
+
+	if it.visited.Empty() {
+		return endIterator
+	}
+	it.currentNode = it.visited.PopFront().(*Node)
+	return it
+}
+
+func (it *Iterator) Value() interface{} {
+	return it.currentNode.Value
+}
+
+func (t *Tree) BeginBreadthFirstSearch() *Iterator {
+	return &Iterator{currentNode: t.Root, visited: lists.New(Node{})}
+}
+
+func (t *Tree) End() *Iterator {
+	return endIterator
+}
 
 // inorderTraversalAuxiliary is a recursive function to traverse the tree InOrder depth first
 func inorderTraversalAuxiliary(node *Node, result []interface{}) []interface{} {

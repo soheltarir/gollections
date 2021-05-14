@@ -31,8 +31,10 @@ import (
 
 // TreeOperations creates a signature of common binary tree operations
 type TreeOperations interface {
-	InsertMany(...interface{})
+	// Insert adds an element in the tree
 	Insert(interface{})
+	// InsertMany add multiple elements in the tree
+	InsertMany(...interface{})
 }
 
 // Tree defines the structure of a binary tree
@@ -86,11 +88,12 @@ func (t *Tree) InsertMany(values ...interface{}) {
 	}
 }
 
+// NewInt instantiates a binary tree which can only accept integer as data.
 func NewInt() *Tree {
 	return New(containers.IntContainer(0))
 }
 
-// New instantiates a fresh binary tree
+// New instantiates a binary tree
 func New(datatype containers.Container) *Tree {
 	tree := &Tree{Root: nil, Height: 0, datatype: datatype}
 	// The below handling is required to achieve method overriding.
