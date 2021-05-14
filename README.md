@@ -4,12 +4,20 @@
 
 ![Tests](https://github.com/soheltarir/gollections/actions/workflows/unittest.yml/badge.svg)
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+[![Go Reference](https://pkg.go.dev/badge/github.com/soheltarir/gollections.svg)](https://pkg.go.dev/github.com/soheltarir/gollections)
+
 
 A Go library which provides common programming data structures and functions like C++ STL library, and specialized container datatypes like Python's collection module.
 
+## Features
+
+- Allows Generic Data Types
+- Thread-Safe Operations on the Data Structures
+- Iterations & Enumerations on the Data Structures
+
+
 ## Containers
 
----
 Container is the base interface that most of the data structures use. 
 Any struct/type should implement the methods to be considered as a `Container`.
 ```go
