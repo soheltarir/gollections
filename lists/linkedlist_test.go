@@ -134,7 +134,17 @@ func TestLinkedList_Back(t *testing.T) {
 func TestLinkedList_Insert(t *testing.T) {
 	ll := NewInt()
 	ll.Insert(ll.Begin(), 1, 2, 3)
-
+	assert.Equal(t, 1, ll.Front())
+	// Insert between
+	it := ll.Begin()
+	it.Advance(1)
+	ll.Insert(it, 4, 5)
+	var actual []interface{}
+	for i := ll.Begin(); i != ll.End(); i = i.Next() {
+		actual = append(actual, i.Value())
+	}
+	expected := []interface{}{1, 4, 5, 2, 3}
+	assert.Equal(t, expected, actual)
 }
 
 func TestLinkedList_Erase(t *testing.T) {

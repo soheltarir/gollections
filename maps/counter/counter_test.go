@@ -1,4 +1,4 @@
-package maps
+package counter
 
 import (
 	"github.com/soheltarir/gollections/containers"

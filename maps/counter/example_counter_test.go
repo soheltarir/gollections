@@ -1,9 +1,9 @@
-package maps_test
+package counter_test
 
 import (
 	"fmt"
 	"github.com/soheltarir/gollections/containers"
-	"github.com/soheltarir/gollections/maps"
+	counter2 "github.com/soheltarir/gollections/maps/counter"
 )
 
 // User implements containers.Container interface
@@ -36,7 +36,7 @@ func Example_counter() {
 
 	// Initialise the Counter. Pass an empty struct to set the datatype of the counter
 	// You can send elements in the NewCounter function itself.
-	counter := maps.NewCounter(User{}, user1, user2, user3)
+	counter := counter2.NewCounter(User{}, user1, user2, user3)
 	// Increment the counter for the object
 	counter.Add(user1)
 	// Increment counters for multiple objects

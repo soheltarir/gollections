@@ -1,6 +1,7 @@
 package binary_trees
 
 import (
+	"github.com/soheltarir/gollections/containers"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -37,4 +38,26 @@ func ExampleTree_Insert() {
 	tree := NewInt()
 	// Insert a value in the tree
 	tree.Insert(10)
+}
+
+func TestNode_Key(t *testing.T) {
+	node := Node{Value: containers.IntContainer(1)}
+	assert.Equal(t, 1, node.Key())
+}
+
+func TestNode_Less(t *testing.T) {
+	node1 := Node{Value: containers.IntContainer(1)}
+	node2 := Node{Value: containers.IntContainer(2)}
+	assert.True(t, node1.Less(node2))
+}
+
+func TestNode_Validate(t *testing.T) {
+	tester := Node{Value: containers.StringContainer("")}
+	nodeNormal := Node{Value: containers.StringContainer("hello")}
+	nodePointer := &Node{Value: containers.StringContainer("world")}
+	assert.Equal(t, nodeNormal, tester.Validate(nodeNormal))
+	assert.Equal(t, nodePointer, tester.Validate(nodePointer))
+	assert.Panics(t, func() {
+		tester.Validate("a")
+	})
 }
