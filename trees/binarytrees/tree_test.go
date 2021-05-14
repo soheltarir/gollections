@@ -1,4 +1,4 @@
-package binary_trees
+package binarytrees
 
 import (
 	"github.com/soheltarir/gollections/containers"

@@ -1,9 +1,9 @@
-package binary_trees_test
+package binarytrees_test
 
 import (
 	"fmt"
 	"github.com/soheltarir/gollections/containers"
-	"github.com/soheltarir/gollections/trees/binary_trees"
+	"github.com/soheltarir/gollections/trees/binarytrees"
 )
 
 // User implements containers.Container interface
@@ -35,7 +35,7 @@ func Example() {
 	user2 := User{ID: "2", Name: "Tony Stark", Email: "tony@avengers.com"}
 	user3 := User{ID: "3", Name: "Natasha Romanoff", Email: "natasha@avengers.com"}
 
-	tree := binary_trees.New(User{})
+	tree := binarytrees.New(User{})
 	tree.InsertMany(user1, user2, user3)
 	fmt.Println(tree.Height)
 

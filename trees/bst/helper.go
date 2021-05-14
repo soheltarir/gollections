@@ -25,16 +25,16 @@ SOFTWARE.
 package bst
 
 import (
-	"github.com/soheltarir/gollections/trees/binary_trees"
+	"github.com/soheltarir/gollections/trees/binarytrees"
 )
 
 // insertToTree inserts a new node at the leaf and returns the updated height of the tree.
 // This is a recursive helper function
 func insertToTree(
-	root *binary_trees.Node,
-	newNode *binary_trees.Node,
+	root *binarytrees.Node,
+	newNode *binarytrees.Node,
 	currHeight int,
-) (*binary_trees.Node, int) {
+) (*binarytrees.Node, int) {
 	// Handle base case for recursion
 	if root == nil {
 		if currHeight == 0 {
