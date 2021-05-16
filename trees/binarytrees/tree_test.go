@@ -33,13 +33,6 @@ func TestTree_InsertMany(t *testing.T) {
 	assert.Equal(t, 3, tree.Height)
 }
 
-func ExampleTree_Insert() {
-	// Initialise a new integer binary tree
-	tree := NewInt()
-	// Insert a value in the tree
-	tree.Insert(10)
-}
-
 func TestNode_Key(t *testing.T) {
 	node := Node{Value: containers.IntContainer(1)}
 	assert.Equal(t, 1, node.Key())

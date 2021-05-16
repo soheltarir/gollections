@@ -22,10 +22,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+// Package binarytrees exposes the Binary Tree container, refer https://en.wikipedia.org/wiki/Binary_tree to know more
+// about the container.
+// Binary Trees are data-structures in which each node has at most two children, which are referred to as the
+// left child and the right child.
 package binarytrees
 
 import "github.com/soheltarir/gollections/containers"
 
+// Node is the basic building block of a binary tree. It contains the following:
+// 1. Data
+// 2. Pointer to left child
+// 3. Pointer to right child
 type Node struct {
 	Value containers.Container
 	Left  *Node
@@ -36,12 +44,15 @@ func (n Node) Key() interface{} {
 	return n.Value.Key()
 }
 
+// Less compares the node with another binary tree node, and compares them.
 func (n Node) Less(x containers.Container) bool {
 	y := x.(Node)
 	return n.Value.Less(y.Value)
 
 }
 
+// Validate checks whether the interface provided is either a Node or *Node.
+// Panics if the check fails.
 func (Node) Validate(x interface{}) containers.Container {
 	converted, ok := x.(Node)
 	if !ok {
