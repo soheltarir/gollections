@@ -1,16 +1,16 @@
 # Gollections
 
----
-
-![Tests](https://github.com/soheltarir/gollections/actions/workflows/unittest.yml/badge.svg)
+[![Build Status](https://www.travis-ci.com/soheltarir/gollections.svg?branch=main)](https://www.travis-ci.com/soheltarir/gollections)
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![Go Reference](https://pkg.go.dev/badge/github.com/soheltarir/gollections.svg)](https://pkg.go.dev/github.com/soheltarir/gollections)
 [![codecov](https://codecov.io/gh/soheltarir/gollections/branch/main/graph/badge.svg?token=PXG4PEEHSJ)](https://codecov.io/gh/soheltarir/gollections)
 [![Go Report Card](https://goreportcard.com/badge/github.com/soheltarir/gollections)](https://goreportcard.com/report/github.com/soheltarir/gollections)
 
+A Go library which provides common programming data structures and functions like C++ STL library, and specialized 
+container datatypes like Python's collection module.
 
-
-A Go library which provides common programming data structures and functions like C++ STL library, and specialized container datatypes like Python's collection module.
+## Documentation
+https://pkg.go.dev/github.com/soheltarir/gollections
 
 ## Features
 
