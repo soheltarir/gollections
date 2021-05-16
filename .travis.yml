@@ -9,7 +9,6 @@ language: go
 go:
   - 1.15.x
   - 1.16.x
-  - release
   - tip
 
 # Skip the install step. Don't `go get` dependencies. Only build with the
