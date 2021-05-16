@@ -118,9 +118,13 @@ func main() {
 Below is the list of data-structures exposed by this package. All the below mentioned data-structures provide
 thread-safe operations.
 
-- [Lists](https://pkg.go.dev/github.com/soheltarir/gollections/lists)
-- [Queue](https://pkg.go.dev/github.com/soheltarir/gollections/queue)
-- [Stack](https://pkg.go.dev/github.com/soheltarir/gollections/stack)
+- [Lists](https://pkg.go.dev/github.com/soheltarir/gollections/lists): Implements https://en.wikipedia.org/wiki/Linked_list
+- [Queue](https://pkg.go.dev/github.com/soheltarir/gollections/queue): Implements https://en.wikipedia.org/wiki/Queue_(abstract_data_type)
+- [Stack](https://pkg.go.dev/github.com/soheltarir/gollections/stack): Implements https://en.wikipedia.org/wiki/Stack_(abstract_data_type)
 - [Maps](https://pkg.go.dev/github.com/soheltarir/gollections/maps)
     
-    - [Counter](https://pkg.go.dev/github.com/soheltarir/gollections/maps/counter)
+    - [Counter](https://pkg.go.dev/github.com/soheltarir/gollections/maps/counter): Similar to https://en.wikipedia.org/wiki/Multiset
+  
+- [Trees](https://pkg.go.dev/github.com/soheltarir/gollections/trees)
+
+    - [Binary Trees](https://pkg.go.dev/github.com/soheltarir/gollections/trees/binarytrees): Implements https://en.wikipedia.org/wiki/Binary_tree

@@ -26,52 +26,77 @@ package binarytrees
 
 import "github.com/soheltarir/gollections/lists"
 
-/**
-Recursive Auxiliary functions
-*/
+// TreeIterations lists methods to iterate through a binary tree.
+type TreeIterations interface {
+	// BreadthFirstTraverse returns an iterator pointing to the root of the binary tree. The iterator is
+	// initialised in such a way that subsequent iterators (by calling Next()) returns tree nodes following the
+	// breadth-first traversal algorithm. Refer https://en.wikipedia.org/wiki/Breadth-first_search to know more.
+	BreadthFirstTraverse() *Iterator
+}
 
+// traversalType defines enums for tree traversal techniques
 type traversalType uint
 
 const (
-	breadthFirstTraversal = iota
+	BreadthFirstTraversal traversalType = iota
 )
 
+// Iterator is a stateful iterator for traversing a linked list.
+// Please note, that iteration over a list is not a thread-safe operation, and if parallel write operations are
+// being performed on the list, the traversal can provide stale and outdated data.
 type Iterator struct {
 	currentNode   *Node
 	visited       *lists.LinkedList
 	traversalType traversalType
 }
 
+// endIterator is used for signifying the end of an iteration or traversal
 var endIterator = &Iterator{}
 
+// Next returns the iterator to the next node in the binary tree based on the traversal technique.
 func (it *Iterator) Next() *Iterator {
-	if it.currentNode == nil {
-		return endIterator
+	switch it.traversalType {
+	case BreadthFirstTraversal:
+		return bfsNext(it)
+	default:
+		panic("invalid traversal type received")
 	}
-	if it.currentNode.Left != nil {
-		it.visited.PushBack(it.currentNode.Left)
-	}
-	if it.currentNode.Right != nil {
-		it.visited.PushBack(it.currentNode.Right)
-	}
-
-	if it.visited.Empty() {
-		return endIterator
-	}
-	it.currentNode = it.visited.PopFront().(*Node)
-	return it
 }
 
+// Value returns the current node's data
 func (it *Iterator) Value() interface{} {
 	return it.currentNode.Value
 }
 
-func (t *Tree) BeginBreadthFirstSearch() *Iterator {
+// BreadthFirstTraverse returns an iterator pointing to the root of the binary tree. The iterator is
+// initialised in such a way that subsequent iterators (by calling Next()) returns tree nodes following the
+// breadth-first traversal algorithm. Refer https://en.wikipedia.org/wiki/Breadth-first_search to know more.
+func (t *Tree) BreadthFirstTraverse() *Iterator {
 	return &Iterator{currentNode: t.Root, visited: lists.New(Node{})}
 }
 
+// End returns an iterator to the past-the-end node in the binary tree.
 func (t *Tree) End() *Iterator {
 	return endIterator
+}
+
+// bfsNext is an auxiliary function that implements the breadth-first search traversal algorithm.
+func bfsNext(currItr *Iterator) *Iterator {
+	if currItr.currentNode == nil {
+		return endIterator
+	}
+	if currItr.currentNode.Left != nil {
+		currItr.visited.PushBack(currItr.currentNode.Left)
+	}
+	if currItr.currentNode.Right != nil {
+		currItr.visited.PushBack(currItr.currentNode.Right)
+	}
+
+	if currItr.visited.Empty() {
+		return endIterator
+	}
+	currItr.currentNode = currItr.visited.PopFront().(*Node)
+	return currItr
 }
 
 // inorderTraversalAuxiliary is a recursive function to traverse the tree InOrder depth first

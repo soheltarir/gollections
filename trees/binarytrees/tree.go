@@ -27,6 +27,7 @@ package binarytrees
 import (
 	"github.com/soheltarir/gollections/containers"
 	"github.com/soheltarir/gollections/queue"
+	"sync"
 )
 
 // TreeOperations creates a signature of common binary tree operations
@@ -40,15 +41,20 @@ type TreeOperations interface {
 // Tree defines the structure of a binary tree
 type Tree struct {
 	TreeOperations
+	TreeIterations
 	Root     *Node
 	Height   int
 	datatype containers.Container
+	mu       sync.RWMutex
 }
 
 // Insert adds a node in the tree
 func (t *Tree) Insert(value interface{}) {
-
 	newNode := &Node{Value: t.datatype.Validate(value)}
+
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
 	if t.Root == nil {
 		t.Root = newNode
 		t.Height++
@@ -95,9 +101,10 @@ func NewInt() *Tree {
 
 // New instantiates a binary tree
 func New(datatype containers.Container) *Tree {
-	tree := &Tree{Root: nil, Height: 0, datatype: datatype}
+	tree := &Tree{Root: nil, Height: 0, datatype: datatype, mu: sync.RWMutex{}}
 	// The below handling is required to achieve method overriding.
 	// Refer: https://stackoverflow.com/questions/38123911/golang-method-override
 	tree.TreeOperations = interface{}(tree).(TreeOperations)
+	tree.TreeIterations = interface{}(tree).(TreeIterations)
 	return tree
 }

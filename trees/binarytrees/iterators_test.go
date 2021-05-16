@@ -25,3 +25,14 @@ func TestTree_PostOrderTraversal(t *testing.T) {
 	expected := []interface{}{5, 11, 9, 20, 6, 10}
 	assert.Equal(t, expected, tree.PostOrderTraversal())
 }
+
+func TestIterator_Next(t *testing.T) {
+	tree := NewInt()
+	it := tree.BreadthFirstTraverse()
+	assert.Equal(t, endIterator, it.Next())
+
+	it = &Iterator{currentNode: nil, traversalType: 10}
+	assert.Panics(t, func() {
+		it.Next()
+	})
+}

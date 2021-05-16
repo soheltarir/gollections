@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// https://en.wikipedia.org/wiki/Binary_tree
-//
+// Package binarytrees exposes the Binary Tree container, refer https://en.wikipedia.org/wiki/Binary_tree to know more
+// about the container.
 // Binary Trees are data-structures in which each node has at most two children, which are referred to as the
 // left child and the right child.
 package binarytrees
