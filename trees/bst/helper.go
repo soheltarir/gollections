@@ -42,7 +42,7 @@ func insertToTree(
 		}
 		return newNode, currHeight
 	}
-	if root.Value.Less(newNode.Value) {
+	if root.Less(*newNode) {
 		root.Right, currHeight = insertToTree(root.Right, newNode, currHeight)
 		currHeight++
 	} else {

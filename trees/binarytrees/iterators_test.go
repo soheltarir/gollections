@@ -7,23 +7,24 @@ import (
 
 func TestTree_InOrderTraversal(t *testing.T) {
 	tree := NewInt()
-	tree.InsertMany(10, 9, 6, 5, 11, 20)
-	expected := []interface{}{5, 9, 11, 10, 20, 6}
-	assert.Equal(t, expected, tree.InOrderTraversal())
-}
+	var expected []interface{}
+	var actual []interface{}
 
-func TestTree_PreOrderTraversal(t *testing.T) {
-	tree := NewInt()
-	tree.InsertMany(10, 9, 6, 5, 11, 20)
-	expected := []interface{}{10, 9, 5, 11, 6, 20}
-	assert.Equal(t, expected, tree.PreOrderTraversal())
-}
+	// Test for empty tree
+	for it := tree.InOrderTraverse(); it != tree.End(); it = it.Next() {
+		actual = append(actual, it.Node().Data())
+	}
+	assert.Equal(t, expected, actual)
 
-func TestTree_PostOrderTraversal(t *testing.T) {
-	tree := NewInt()
+	actual = make([]interface{}, 0)
+
 	tree.InsertMany(10, 9, 6, 5, 11, 20)
-	expected := []interface{}{5, 11, 9, 20, 6, 10}
-	assert.Equal(t, expected, tree.PostOrderTraversal())
+	expected = []interface{}{5, 9, 11, 10, 20, 6}
+
+	for it := tree.InOrderTraverse(); it != tree.End(); it = it.Next() {
+		actual = append(actual, it.Node().Data())
+	}
+	assert.Equal(t, expected, actual)
 }
 
 func TestIterator_Next(t *testing.T) {
@@ -35,4 +36,16 @@ func TestIterator_Next(t *testing.T) {
 	assert.Panics(t, func() {
 		it.Next()
 	})
+}
+
+func TestLeftMost(t *testing.T) {
+	tree := NewInt()
+	tree.InsertMany(1, 2, 3, 4, 5, 6, 7)
+	assert.Equal(t, 4, findLeftMost(tree.Root).Data())
+}
+
+func TestRightMost(t *testing.T) {
+	tree := NewInt()
+	tree.InsertMany(1, 2, 3, 4, 5, 6, 7)
+	assert.Equal(t, 7, findRightMost(tree.Root).Data())
 }

@@ -50,7 +50,7 @@ type Tree struct {
 
 // Insert adds a node in the tree
 func (t *Tree) Insert(value interface{}) {
-	newNode := &Node{Value: t.datatype.Validate(value)}
+	newNode := &Node{data: t.datatype.Validate(value)}
 
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -70,6 +70,7 @@ func (t *Tree) Insert(value interface{}) {
 		currHeight++
 		if currNode.Left == nil {
 			currNode.Left = newNode
+			newNode.parent = currNode
 			if currHeight >= t.Height {
 				t.Height++
 			}
@@ -79,6 +80,7 @@ func (t *Tree) Insert(value interface{}) {
 		}
 		if currNode.Right == nil {
 			currNode.Right = newNode
+			newNode.parent = currNode
 			// We don't need to increment height here, as we are filling up the left leaf first.
 			break
 		} else {

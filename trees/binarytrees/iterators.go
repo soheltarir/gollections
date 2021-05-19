@@ -39,15 +39,17 @@ type traversalType uint
 
 const (
 	BreadthFirstTraversal traversalType = iota
+	InOrderTraversal
 )
 
 // Iterator is a stateful iterator for traversing a linked list.
 // Please note, that iteration over a list is not a thread-safe operation, and if parallel write operations are
 // being performed on the list, the traversal can provide stale and outdated data.
 type Iterator struct {
-	currentNode   *Node
-	visited       *lists.LinkedList
-	traversalType traversalType
+	currentNode    *Node
+	traversalStack *lists.LinkedList
+	traversalType  traversalType
+	visitedNodes   map[*Node]bool
 }
 
 // endIterator is used for signifying the end of an iteration or traversal
@@ -58,21 +60,37 @@ func (it *Iterator) Next() *Iterator {
 	switch it.traversalType {
 	case BreadthFirstTraversal:
 		return bfsNext(it)
+	case InOrderTraversal:
+		return inorderNext(it)
 	default:
 		panic("invalid traversal type received")
 	}
 }
 
-// Value returns the current node's data
-func (it *Iterator) Value() interface{} {
-	return it.currentNode.Value
+// Node returns the current node in the iteration
+func (it *Iterator) Node() *Node {
+	return it.currentNode
 }
 
 // BreadthFirstTraverse returns an iterator pointing to the root of the binary tree. The iterator is
 // initialised in such a way that subsequent iterators (by calling Next()) returns tree nodes following the
 // breadth-first traversal algorithm. Refer https://en.wikipedia.org/wiki/Breadth-first_search to know more.
 func (t *Tree) BreadthFirstTraverse() *Iterator {
-	return &Iterator{currentNode: t.Root, visited: lists.New(Node{})}
+	if t.Root == nil {
+		return endIterator
+	}
+	return &Iterator{currentNode: t.Root, traversalStack: lists.New(Node{}), traversalType: BreadthFirstTraversal}
+}
+
+// InOrderTraverse returns an iterator pointing to the root of the binary tree & is initialised in such a way that
+// subsequent iterators (by calling Next()) returns tree nodes following In-order Traversal technique.
+// For more info refer https://www.tutorialspoint.com/data_structures_algorithms/tree_traversal.htm
+func (t *Tree) InOrderTraverse() *Iterator {
+	if t.Root == nil {
+		return endIterator
+	}
+	node := findLeftMost(t.Root)
+	return &Iterator{currentNode: node, traversalType: InOrderTraversal, visitedNodes: map[*Node]bool{node: true}}
 }
 
 // End returns an iterator to the past-the-end node in the binary tree.
@@ -86,68 +104,59 @@ func bfsNext(currItr *Iterator) *Iterator {
 		return endIterator
 	}
 	if currItr.currentNode.Left != nil {
-		currItr.visited.PushBack(currItr.currentNode.Left)
+		currItr.traversalStack.PushBack(currItr.currentNode.Left)
 	}
 	if currItr.currentNode.Right != nil {
-		currItr.visited.PushBack(currItr.currentNode.Right)
+		currItr.traversalStack.PushBack(currItr.currentNode.Right)
 	}
 
-	if currItr.visited.Empty() {
+	if currItr.traversalStack.Empty() {
 		return endIterator
 	}
-	currItr.currentNode = currItr.visited.PopFront().(*Node)
+	currItr.currentNode = currItr.traversalStack.PopFront().(*Node)
 	return currItr
 }
 
-// inorderTraversalAuxiliary is a recursive function to traverse the tree InOrder depth first
-func inorderTraversalAuxiliary(node *Node, result []interface{}) []interface{} {
+// inorderNext is an auxiliary function that implements the in-order traversal algorithm.
+func inorderNext(currItr *Iterator) *Iterator {
+	currNode := currItr.currentNode
+	rightMost := findRightMost(currNode)
+	if rightMost != currNode {
+		leftMost := findLeftMost(rightMost)
+		currItr.currentNode = leftMost
+	} else if currNode.parent != nil {
+		_, found := currItr.visitedNodes[currNode.parent]
+		if found {
+			currItr.currentNode = currNode.parent.parent
+		} else {
+			currItr.currentNode = currNode.parent
+		}
+	}
+	if currItr.currentNode == nil {
+		return endIterator
+	}
+	currItr.visitedNodes[currItr.currentNode] = true
+	return currItr
+}
+
+// findLeftMost returns the left-most child of the node, i.e., the node at the deepest left.
+func findLeftMost(node *Node) *Node {
+	var leftMost *Node
 	if node.Left != nil {
-		result = inorderTraversalAuxiliary(node.Left, result)
+		leftMost = findLeftMost(node.Left)
+	} else {
+		leftMost = node
 	}
-	result = append(result, node.Value.Key())
+	return leftMost
+}
+
+// findRightMost returns the right-most child of the node, i.e., the node at the deepest right.
+func findRightMost(node *Node) *Node {
+	var rightMost *Node
 	if node.Right != nil {
-		result = inorderTraversalAuxiliary(node.Right, result)
+		rightMost = findRightMost(node.Right)
+	} else {
+		rightMost = node
 	}
-	return result
-}
-
-// preorderTraversalAuxiliary is a recursive function to traverse the tree PreOrder depth first
-func preorderTraversalAuxiliary(node *Node, result []interface{}) []interface{} {
-	result = append(result, node.Value.Key())
-	if node.Left != nil {
-		result = preorderTraversalAuxiliary(node.Left, result)
-	}
-	if node.Right != nil {
-		result = preorderTraversalAuxiliary(node.Right, result)
-	}
-	return result
-}
-
-// postorderTraversalAuxiliary is a recursive function to traverse the tree PostOrder depth first
-func postorderTraversalAuxiliary(node *Node, result []interface{}) []interface{} {
-	if node.Left != nil {
-		result = postorderTraversalAuxiliary(node.Left, result)
-	}
-	if node.Right != nil {
-		result = postorderTraversalAuxiliary(node.Right, result)
-	}
-	result = append(result, node.Value.Key())
-	return result
-}
-
-/*****************************************************************************************************/
-
-func (t *Tree) InOrderTraversal() []interface{} {
-	var result []interface{}
-	return inorderTraversalAuxiliary(t.Root, result)
-}
-
-func (t *Tree) PreOrderTraversal() []interface{} {
-	var result []interface{}
-	return preorderTraversalAuxiliary(t.Root, result)
-}
-
-func (t *Tree) PostOrderTraversal() []interface{} {
-	var result []interface{}
-	return postorderTraversalAuxiliary(t.Root, result)
+	return rightMost
 }

@@ -59,6 +59,9 @@ type LinkedList struct {
 
 // Front returns the value of the first element of the linked list
 func (ll *LinkedList) Front() interface{} {
+	ll.mu.RLock()
+	defer ll.mu.RUnlock()
+
 	head := ll.head
 	if head == nil {
 		return nil
@@ -69,6 +72,9 @@ func (ll *LinkedList) Front() interface{} {
 
 // Back returns the value of the last element of the linked list
 func (ll *LinkedList) Back() interface{} {
+	ll.mu.RLock()
+	defer ll.mu.RUnlock()
+
 	tail := ll.tail
 	if tail == nil {
 		return nil
@@ -98,6 +104,9 @@ func (ll *LinkedList) End() *Iterator {
 // RBegin returns a reverse iterator pointing to the last element in the container (i.e., its reverse beginning).
 // Reverse iterators iterate backwards: increasing them moves them towards the beginning of the container.
 func (ll *LinkedList) RBegin() *Iterator {
+	ll.mu.RLock()
+	defer ll.mu.RUnlock()
+
 	if ll.size == 0 {
 		return ll.REnd()
 	}
@@ -195,14 +204,16 @@ func (ll *LinkedList) PopBack() interface{} {
 
 // Insert extends the list by inserting new elements before the element at the specified position.
 // This effectively increases the list size by the amount of elements inserted.
-// Note: This operation is not thread safe.
+// Please note: This operation is not thread-safe, as there is no way (currently) to update the iterator node to the
+// originally intended position.
 func (ll *LinkedList) Insert(it *Iterator, elements ...interface{}) {
 	tempList := New(ll.valueType)
 
 	for _, element := range elements {
 		tempList.PushBack(element)
 	}
-	if ll.size == 0 {
+
+	if ll.Size() == 0 {
 		ll.head, ll.tail = tempList.head, tempList.tail
 		ll.size = tempList.size
 	} else {
@@ -275,12 +286,14 @@ func (ll *LinkedList) Erase(iterators ...*Iterator) error {
 
 // Size returns the length of the linked list
 func (ll *LinkedList) Size() int64 {
+	ll.mu.RLock()
+	defer ll.mu.RUnlock()
 	return ll.size
 }
 
 // Empty returns whether the list container is empty (i.e. whether its size is 0).
 func (ll *LinkedList) Empty() bool {
-	if ll.size == 0 {
+	if ll.Size() == 0 {
 		return true
 	}
 	return false
