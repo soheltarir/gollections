@@ -12,7 +12,7 @@ func ExampleTree_BreadthFirstTraverse() {
 
 	// Iterate through the tree using breadth-first search technique, and print the node data.
 	for it := tree.BreadthFirstTraverse(); it != tree.End(); it = it.Next() {
-		fmt.Println(it.Value())
+		fmt.Println(it.Node().Data())
 	}
 
 	// Output:

@@ -14,7 +14,7 @@ func TestNew(t *testing.T) {
 func TestTree_Insert(t *testing.T) {
 	tree := NewInt()
 	tree.Insert(10)
-	assert.Equal(t, 10, tree.Root.Value.Key())
+	assert.Equal(t, 10, tree.Root.Data())
 }
 
 func TestTree_Height(t *testing.T) {
@@ -34,23 +34,27 @@ func TestTree_InsertMany(t *testing.T) {
 }
 
 func TestNode_Key(t *testing.T) {
-	node := Node{Value: containers.IntContainer(1)}
+	node := Node{data: containers.IntContainer(1)}
 	assert.Equal(t, 1, node.Key())
 }
 
 func TestNode_Less(t *testing.T) {
-	node1 := Node{Value: containers.IntContainer(1)}
-	node2 := Node{Value: containers.IntContainer(2)}
+	node1 := Node{data: containers.IntContainer(1)}
+	node2 := Node{data: containers.IntContainer(2)}
 	assert.True(t, node1.Less(node2))
 }
 
 func TestNode_Validate(t *testing.T) {
-	tester := Node{Value: containers.StringContainer("")}
-	nodeNormal := Node{Value: containers.StringContainer("hello")}
-	nodePointer := &Node{Value: containers.StringContainer("world")}
+	tester := Node{data: containers.StringContainer("")}
+	nodeNormal := Node{data: containers.StringContainer("hello")}
+	nodePointer := &Node{data: containers.StringContainer("world")}
 	assert.Equal(t, nodeNormal, tester.Validate(nodeNormal))
 	assert.Equal(t, nodePointer, tester.Validate(nodePointer))
 	assert.Panics(t, func() {
 		tester.Validate("a")
 	})
+}
+
+func TestNewTreeNode(t *testing.T) {
+	assert.IsType(t, &Node{}, NewTreeNode(containers.IntContainer(1)))
 }

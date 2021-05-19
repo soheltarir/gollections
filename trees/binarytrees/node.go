@@ -35,19 +35,25 @@ import "github.com/soheltarir/gollections/containers"
 // 2. Pointer to left child
 // 3. Pointer to right child
 type Node struct {
-	Value containers.Container
-	Left  *Node
-	Right *Node
+	data   containers.Container
+	Left   *Node
+	Right  *Node
+	parent *Node
+}
+
+// Data returns the data stored in the tree node
+func (n Node) Data() interface{} {
+	return containers.CleanBasicType(n.data)
 }
 
 func (n Node) Key() interface{} {
-	return n.Value.Key()
+	return n.data.Key()
 }
 
 // Less compares the node with another binary tree node, and compares them.
 func (n Node) Less(x containers.Container) bool {
 	y := x.(Node)
-	return n.Value.Less(y.Value)
+	return n.data.Less(y.data)
 
 }
 
@@ -59,4 +65,8 @@ func (Node) Validate(x interface{}) containers.Container {
 		return x.(*Node)
 	}
 	return converted
+}
+
+func NewTreeNode(data containers.Container) *Node {
+	return &Node{data: data}
 }

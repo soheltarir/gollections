@@ -8,7 +8,11 @@ package lists
 import (
 	"github.com/soheltarir/gollections/containers"
 	"github.com/stretchr/testify/assert"
+	"github.com/thoas/go-funk"
+	"math/rand"
+	"sync"
 	"testing"
+	"time"
 )
 
 func TestNewInt(t *testing.T) {
@@ -217,4 +221,52 @@ func TestLinkedList_Display(t *testing.T) {
 	ll.Insert(ll.Begin(), 1, 2, 3, 4, 5)
 	expected := "1 <-> 2 <-> 3 <-> 4 <-> 5"
 	assert.Equal(t, expected, ll.Display())
+}
+
+func BenchmarkLinkedList_Insert(b *testing.B) {
+	rand.Seed(time.Now().Unix())
+	var elements []interface{}
+	for _, val := range rand.Perm(10000) {
+		elements = append(elements, val)
+	}
+	b.ResetTimer()
+	list := NewInt()
+	list.Insert(list.Begin(), elements...)
+}
+
+func BenchmarkLinkedList_InsertParallel(b *testing.B) {
+	rand.Seed(time.Now().Unix())
+	var elements []interface{}
+	for _, val := range rand.Perm(10000) {
+		elements = append(elements, val)
+	}
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			list := NewInt()
+			list.Insert(list.Begin(), elements...)
+		}
+	})
+}
+
+func BenchmarkLinkedList_PushBack(b *testing.B) {
+	rand.Seed(time.Now().Unix())
+	elements := rand.Perm(10000)
+	chunks := funk.Chunk(elements, 100).([][]int)
+	b.ResetTimer()
+
+	var wg sync.WaitGroup
+	list := NewInt()
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		i := i
+		go func() {
+			defer wg.Done()
+			for _, element := range chunks[i] {
+				list.PushBack(element)
+			}
+		}()
+	}
+	wg.Wait()
 }
