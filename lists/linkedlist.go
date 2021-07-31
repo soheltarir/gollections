@@ -33,9 +33,10 @@ package lists
 
 import (
 	"fmt"
-	"github.com/soheltarir/gollections/containers"
 	"strings"
 	"sync"
+
+	"github.com/soheltarir/gollections/containers"
 )
 
 // Node represents an element in a Linked List
@@ -280,10 +281,7 @@ func (ll *LinkedList) Size() int64 {
 
 // Empty returns whether the list container is empty (i.e. whether its size is 0).
 func (ll *LinkedList) Empty() bool {
-	if ll.size == 0 {
-		return true
-	}
-	return false
+	return ll.size == 0
 }
 
 /** Display Functions **/

@@ -33,6 +33,7 @@ package lists
 
 import (
 	"fmt"
+
 	"github.com/soheltarir/gollections/containers"
 )
 
@@ -80,10 +81,7 @@ func (it *Iterator) Next() *Iterator {
 }
 
 func (it *Iterator) IsEqual(it2 *Iterator) bool {
-	if it.currentNode == it2.currentNode {
-		return true
-	}
-	return false
+	return it.currentNode == it2.currentNode
 }
 
 // Advance moves the iterator forward by the no. of the steps provided

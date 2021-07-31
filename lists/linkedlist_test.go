@@ -231,10 +231,10 @@ func TestLinkedList_Search(t *testing.T) {
 
 func BenchmarkLinkedList_Search(b *testing.B) {
 	ll := NewInt()
-	slice := make([]interface{}, 10000, 10000)
+	slice := make([]interface{}, 10000)
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < 10000; i++ {
-		slice[i] = rand.Intn(999) - rand.Intn(999)
+		slice[i] = rand.Intn(999)
 	}
 	ll.Insert(ll.Begin(), slice...)
 	b.ResetTimer()
