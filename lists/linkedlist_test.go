@@ -6,9 +6,12 @@
 package lists
 
 import (
+	"math/rand"
+	"testing"
+	"time"
+
 	"github.com/soheltarir/gollections/containers"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestNewInt(t *testing.T) {
@@ -217,4 +220,25 @@ func TestLinkedList_Display(t *testing.T) {
 	ll.Insert(ll.Begin(), 1, 2, 3, 4, 5)
 	expected := "1 <-> 2 <-> 3 <-> 4 <-> 5"
 	assert.Equal(t, expected, ll.Display())
+}
+
+func TestLinkedList_Search(t *testing.T) {
+	ll := NewInt()
+	ll.Insert(ll.Begin(), 1, 2, 3, 4, 5, 6)
+	assert.Equal(t, int64(2), ll.Search(3).Index())
+	assert.Nil(t, ll.Search(7))
+}
+
+func BenchmarkLinkedList_Search(b *testing.B) {
+	ll := NewInt()
+	slice := make([]interface{}, 10000, 10000)
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < 10000; i++ {
+		slice[i] = rand.Intn(999) - rand.Intn(999)
+	}
+	ll.Insert(ll.Begin(), slice...)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		ll.Search(rand.Intn(999))
+	}
 }
